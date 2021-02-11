@@ -1,12 +1,17 @@
 package fr.formation.afpa;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 
 import javax.swing.JButton;
+
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -18,37 +23,47 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import javax.swing.WindowConstants;
-
+import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
+import javax.sound.sampled.Line;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+
+import java.awt.Insets;
+import java.awt.FlowLayout;
+import net.miginfocom.swing.MigLayout;
+import java.awt.Component;
 
 /**
  * Hello world!
  *
  */
 public class FrameDemo extends JFrame implements WindowListener {
+
 	public static void main(String[] args) {
 		FrameDemo fd = new FrameDemo();
 
 	}
 
-	public FrameDemo() {
-		super("Frame Demo");
-		// Initialisation des components
-		JFrame f = new JFrame();
-		f.setSize(500, 400);
-		f.setTitle("Liste des étudiants");
+	public FrameDemo() {//Initalisation des components
+	JFrame f = new JFrame();
+	f.setSize(500, 400);
+	f.setTitle("Liste des étudiants");
+
+	JFrame fMo = new JFrame();
+		fMo.setSize(521, 446);
+		fMo.setTitle("Modifier étudiant");
 
 		JFrame fAj = new JFrame();
-		fAj.setSize(500, 400);
+	fAj.setSize(500, 400);
 		fAj.setTitle("Ajouter un étudiant");
-
-		JFrame fMo = new JFrame();
-		fMo.setSize(500, 400);
-		fMo.setTitle("Modifier étudiant");
 
 		JPanel pBouton = new JPanel();
 		JPanel pAcc = new JPanel();
+
 		JPanel pPhoto = new JPanel();
 		JPanel pNom = new JPanel();
 		JPanel pPrenom = new JPanel();
@@ -64,19 +79,22 @@ public class FrameDemo extends JFrame implements WindowListener {
 		JMenu etudiant = new JMenu("Etudiant");
 
 		JMenuItem ajoutEtudiant = new JMenuItem("Ajouter étudiant");
-		JMenuItem listEtudiant = new JMenuItem("Liste étudiant");
+
 		JMenuItem modifierEtudiant = new JMenuItem("Modifier étudiant");
 
 		JLabel photo = new JLabel("Photo : ");
 		JLabel nom = new JLabel("Nom: ");
 		JLabel prenom = new JLabel("Prenom : ");
 		JLabel dateNaissance = new JLabel("Date de naissance : ");
-		
+		JLabel affPhotoAj = new JLabel();
+		affPhotoAj.setSize(200, 100);
 
 		JLabel photoMo = new JLabel("Photo : ");
 		JLabel nomMo = new JLabel("Nom: ");
 		JLabel prenomMo = new JLabel("Prenom : ");
 		JLabel dateNaissanceMo = new JLabel("Date de naissance : ");
+		JLabel affPhotoMo = new JLabel();
+		affPhotoMo.setSize(200, 100);
 
 		JTextField photoT = new JTextField(10);
 		photoT.setSize(20, 20);
@@ -110,7 +128,6 @@ public class FrameDemo extends JFrame implements WindowListener {
 		parcourirAj.setVisible(false);
 		JButton parcourirMo = new JButton("Parcourir");
 		parcourirMo.setVisible(false);
-		JFileChooser parcourPhoto = new JFileChooser();
 
 		ajouterAj.setSize(20, 20);
 		annulerAj.setSize(20, 20);
@@ -120,21 +137,20 @@ public class FrameDemo extends JFrame implements WindowListener {
 		annulerMo.setSize(20, 20);
 		parcourirMo.setSize(20, 20);
 
-		// Initialisation de la liste des étudiants
-		String[] donnees = { "Nom", "Prenom", "Date de naissance", "ID" };
+		// Initialisation de la liste des étudiants sur la page d'accueil
 
-		Object[][] arrEtu = { { "Petit", "Nicolas", new Integer(1997), new Integer(1) },
-				{ "Paddle", "Kid", new Integer(1999), new Integer(2) },
-				{ "Zep", "Titeuf", new Integer(2001), new Integer(3) }, };
+		DefaultTableModel model = new DefaultTableModel();
+		model.addColumn("Nom");
+		model.addColumn("Prenom");
+		model.addColumn("Date de naissance");
+		model.addColumn("ID");
 
-		JTable tab = new JTable(arrEtu, donnees);
-		tab.setVisible(false);
+		JTable tab = new JTable(model);
 
-		// Agencement page d'accueil avec liste
+		// Agencement menu, fenetre et panel
 
 		menu.add(etudiant);
 		etudiant.add(ajoutEtudiant);
-		etudiant.add(listEtudiant);
 		etudiant.add(modifierEtudiant);
 
 		BoxLayout boxlayoutAcc = new BoxLayout(pAcc, BoxLayout.Y_AXIS);
@@ -178,6 +194,7 @@ public class FrameDemo extends JFrame implements WindowListener {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				fAj.setVisible(true);
+
 				JPanel boxAj = new JPanel();
 				BoxLayout boxlayoutAj = new BoxLayout(boxAj, BoxLayout.Y_AXIS);
 
@@ -188,9 +205,8 @@ public class FrameDemo extends JFrame implements WindowListener {
 				boxAj.add(pNom);
 				boxAj.add(pDateNaissance);
 
-				
-				fAj.add(boxAj);
-				
+				fAj.add(boxAj, BorderLayout.WEST);
+				fAj.add(affPhotoAj, BorderLayout.EAST);
 				fAj.add(pBouton, BorderLayout.SOUTH);
 				ajouterAj.setVisible(true);
 				annulerAj.setVisible(true);
@@ -199,12 +215,18 @@ public class FrameDemo extends JFrame implements WindowListener {
 			}
 		});
 
-		parcourirAj.addActionListener(new ActionListener() {
+		// Initialisation des boutons de la page ajouter
+		ajouterAj.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				parcourPhoto.showOpenDialog(photoT);
-
+				model.addRow(new Object[] { nomT.getText(), prenomT.getText(), dateNaissanceT.getText(),
+						(tab.getRowCount() + 1) });
+				photoT.setText(null);
+				prenomT.setText(null);
+				nomT.setText(null);
+				dateNaissanceT.setText(null);
+				fAj.setVisible(false);
 			}
 		});
 
@@ -222,53 +244,129 @@ public class FrameDemo extends JFrame implements WindowListener {
 				annulerAj.setVisible(false);
 				parcourirAj.setVisible(false);
 
-			fAj.setVisible(false);
-				
-				
+				fAj.setVisible(false);
 
 			}
 		});
 
-		listEtudiant.addActionListener(new ActionListener() {
-
-			@Override
+		parcourirAj.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				tab.setVisible(true);
-
+				JFileChooser file = new JFileChooser();
+				file.setCurrentDirectory(new File(System.getProperty("user.home")));
+				// filtrer les fichiers
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("Image", ".jpg", ".png");
+				file.addChoosableFileFilter(filter);
+				int res = file.showSaveDialog(null);
+				// si l'utilisateur clique sur enregistrer dans Jfilechooser
+				if (res == JFileChooser.APPROVE_OPTION) {
+					File selFile = file.getSelectedFile();
+					String path = selFile.getAbsolutePath();
+					ImageIcon icon = new ImageIcon(path);
+					
+					affPhotoAj.setIcon(icon);
+					fAj.pack();
+					photoT.setText(path);
+				}
 			}
 		});
 
-		modifierEtudiant.addActionListener(new ActionListener() {
+		// Initialisation de la fenêtre accueillant le formulaire de modification
+		tab.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent event) {
+				if (tab.getSelectedColumn() == 3) {
+					int ID = tab.getSelectedRow();
+					String nomV = (String) tab.getValueAt(ID, 0);
+					String prenomV = (String) tab.getValueAt(ID, 1);
+					String naissanceV = (String) tab.getValueAt(ID, 2);
+
+					nomTmo.setText(nomV);
+					prenomTmo.setText(prenomV);
+					dateNaissanceTmo.setText(naissanceV);
+
+					fMo.setVisible(true);
+					JPanel boxMo = new JPanel();
+					BoxLayout boxlayoutMo = new BoxLayout(boxMo, BoxLayout.Y_AXIS);
+					boxMo.setLayout(boxlayoutMo);
+
+					boxMo.add(pPhotoMo);
+					boxMo.add(pNomMo);
+					boxMo.add(pPrenomMo);
+					boxMo.add(pDateNaissanceMo);
+
+					photoTmo.setEditable(false);
+					nomTmo.setEditable(false);
+					prenomTmo.setEditable(false);
+					dateNaissanceTmo.setEditable(false);
+
+					fMo.add(affPhotoAj, BorderLayout.EAST);
+					fMo.add(boxMo, BorderLayout.WEST);
+					fMo.add(pBouton, BorderLayout.SOUTH);
+					modifierMo.setVisible(true);
+					fMo.setVisible(true);
+
+					photoTmo.setEditable(false);
+					nomTmo.setEditable(false);
+					prenomTmo.setEditable(false);
+					dateNaissanceTmo.setEditable(false);
+
+					modifierMo.setVisible(true);
+					ajouterAj.setVisible(false);
+					annulerAj.setVisible(false);
+					fMo.getContentPane().add(pBouton, BorderLayout.SOUTH);
+				}
+
+			}
+
+		});
+		/*
+		 * modifierEtudiant.addActionListener(new ActionListener() {
+		 * 
+		 * @Override public void actionPerformed(ActionEvent e) {
+		 * 
+		 * 
+		 * 
+		 * fMo.setVisible(true); JPanel boxMo = new JPanel(); BoxLayout boxlayoutMo =
+		 * new BoxLayout(boxMo, BoxLayout.Y_AXIS);
+		 * 
+		 * 
+		 * 
+		 * boxMo.setLayout(boxlayoutMo);
+		 * 
+		 * boxMo.add(pPhotoMo); boxMo.add(pNomMo); boxMo.add(pPrenomMo);
+		 * boxMo.add(pDateNaissanceMo);
+		 * 
+		 * photoTmo.setEditable(false); nomTmo.setEditable(false);
+		 * prenomTmo.setEditable(false); dateNaissanceTmo.setEditable(false);
+		 * 
+		 * fMo.add(affPhotoAj, BorderLayout.EAST); fMo.add(boxMo, BorderLayout.WEST);
+		 * fMo.add(pBouton, BorderLayout.SOUTH); modifierMo.setVisible(true);
+		 * 
+		 * } });
+		 */
+
+		enregistrerMo.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fMo.setVisible(true);
-				JPanel boxMo = new JPanel();
-				BoxLayout boxlayoutMo = new BoxLayout(boxMo, BoxLayout.Y_AXIS);
-
-				String imgUrl="C:\\Users\\afpa\\Documents\\Fichier IO\\test\\iconEtudiant.png";
-			     ImageIcon icone = new ImageIcon(imgUrl);
-			     
-			     JLabel affPhoto = new JLabel(icone);
-			     
-				boxMo.setLayout(boxlayoutMo);
-
-				boxMo.add(pPhotoMo);
-				boxMo.add(pNomMo);
-				boxMo.add(pPrenomMo);
-				boxMo.add(pDateNaissanceMo);
+				int ID = tab.getSelectedRow();
+				tab.setValueAt(nomTmo.getText(), ID, 0);
+				tab.setValueAt(prenomTmo.getText(), ID, 1);
+				tab.setValueAt(dateNaissanceTmo.getText(), ID, 2);
 
 				photoTmo.setEditable(false);
-				nomTmo.setEditable(false);
 				prenomTmo.setEditable(false);
 				dateNaissanceTmo.setEditable(false);
+				nomTmo.setEditable(false);
 
-				fMo.add(affPhoto, BorderLayout.EAST);
-				fMo.add(boxMo);
-				fMo.add(pBouton, BorderLayout.SOUTH);
 				modifierMo.setVisible(true);
+				enregistrerMo.setVisible(false);
+				parcourirMo.setVisible(false);
+				annulerMo.setVisible(false);
 
 			}
+
 		});
 
 		modifierMo.addActionListener(new ActionListener() {
@@ -277,6 +375,7 @@ public class FrameDemo extends JFrame implements WindowListener {
 			public void actionPerformed(ActionEvent e) {
 
 				photoTmo.setEditable(true);
+				nomTmo.setEditable(true);
 				prenomTmo.setEditable(true);
 				dateNaissanceTmo.setEditable(true);
 
@@ -284,24 +383,6 @@ public class FrameDemo extends JFrame implements WindowListener {
 				modifierMo.setVisible(false);
 				enregistrerMo.setVisible(true);
 				annulerMo.setVisible(true);
-
-			}
-
-		});
-
-		enregistrerMo.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-
-				photoTmo.setEditable(false);
-				prenomTmo.setEditable(false);
-				dateNaissanceTmo.setEditable(false);
-				
-				modifierMo.setVisible(true);
-				enregistrerMo.setVisible(false);
-				parcourirMo.setVisible(false);
-				annulerMo.setVisible(false);
 
 			}
 
@@ -317,15 +398,34 @@ public class FrameDemo extends JFrame implements WindowListener {
 				nomTmo.setText(null);
 				dateNaissanceTmo.setText(null);
 
-				
 				enregistrerMo.setVisible(false);
 				parcourirMo.setVisible(false);
 				annulerMo.setVisible(false);
 
-				
 				fMo.setVisible(false);
-				
 
+			}
+		});
+
+		parcourirMo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser file = new JFileChooser();
+				file.setCurrentDirectory(new File(System.getProperty("user.home")));
+				// filtrer les fichiers
+				FileNameExtensionFilter filter = new FileNameExtensionFilter("Image", ".jpg", ".png");
+				file.addChoosableFileFilter(filter);
+				int res = file.showSaveDialog(null);
+				// si l'utilisateur clique sur enregistrer dans Jfilechooser
+				if (res == JFileChooser.APPROVE_OPTION) {
+					File selFile = file.getSelectedFile();
+					String path = selFile.getAbsolutePath();
+					ImageIcon icon = new ImageIcon(path);
+					
+					
+					affPhotoMo.setIcon(icon);
+					photoTmo.setText(path);
+					fMo.pack();
+				}
 			}
 		});
 
