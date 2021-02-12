@@ -507,7 +507,7 @@ public class FrameDemo extends JFrame implements WindowListener {
 				model.fireTableDataChanged();
 				tab.setModel(model);
 				tab.getColumnModel().getColumn(0).setPreferredWidth(36);
-				
+				//Finalisation
 			}
 
 		});
