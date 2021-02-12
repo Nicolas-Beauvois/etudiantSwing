@@ -150,8 +150,6 @@ public class FrameDemo extends JFrame implements WindowListener {
 		lblPhoto.setBackground(Color.DARK_GRAY);
 		lblPhoto.setBounds(312, 51, 158, 149);
 		pDateNaissance.add(lblPhoto);
-		
-		
 
 		// Initialisation fenêtre modification
 
@@ -224,15 +222,13 @@ public class FrameDemo extends JFrame implements WindowListener {
 		JButton parcourirMo = new JButton("Parcourir");
 		parcourirMo.setSize(20, 20);
 		parcourirMo.setBounds(157, 47, 97, 25);
-		
-
 
 		ajouterAj.setSize(20, 20);
 		annulerAj.setSize(20, 20);
 		enregistrerMo.setSize(20, 20);
 		modifierMo.setSize(20, 20);
 		annulerMo.setSize(20, 20);
-		
+
 		pBouton.add(ajouterAj);
 		pBouton.add(annulerAj);
 		pBouton.add(enregistrerMo);
@@ -481,10 +477,10 @@ public class FrameDemo extends JFrame implements WindowListener {
 					String path = selFile.getAbsolutePath();
 					ImageIcon icon = new ImageIcon(path);
 					Image img = icon.getImage();
-					Image newImg = img.getScaledInstance(lblNewLabel .getWidth(), lblNewLabel .getHeight(),
+					Image newImg = img.getScaledInstance(lblNewLabel.getWidth(), lblNewLabel.getHeight(),
 							Image.SCALE_SMOOTH);
 					icon = new ImageIcon(newImg);
-					lblNewLabel .setIcon(icon);
+					lblNewLabel.setIcon(icon);
 					photoTmo.setText(path);
 				}
 			}
@@ -494,32 +490,25 @@ public class FrameDemo extends JFrame implements WindowListener {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-
+				List<Etudiant> etudiants = service.listEtudiant();
+				Object[] col = { "Nom", "Prenom", "Date de naissance", "ID" };
 				
-					FileReader reader;
-					try {
-						reader = new FileReader("liste.txt");
-						BufferedReader bufReader = new BufferedReader(reader);
-
-						String readLine = null;
-						
-						List<Etudiant> studentList = service.listEtudiant();
-						tab.add((Component) studentList);
-					} catch (FileNotFoundException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				
-					
-					
-					
-					
-				} 
-
-					
-
-
-		
+				model.fireTableRowsUpdated(0, etudiants.size());
+				model.setColumnIdentifiers(col);
+				Object rowData[] = new Object[4];
+				for (int i = 0; i < etudiants.size(); i++) {
+					Object etudiant = etudiants.get(i);
+					rowData[0] = ((Etudiant) etudiant).getNom();
+					rowData[1] = ((Etudiant) etudiant).getPrenom();
+					rowData[2] = ((Etudiant) etudiant).getDateNaissance();
+					rowData[3] = ((Etudiant) etudiant).getID();
+					model.addRow(rowData);
+				}
+				model.fireTableDataChanged();
+				tab.setModel(model);
+				tab.getColumnModel().getColumn(0).setPreferredWidth(36);
+				//Finalisationaa
+			}
 
 		});
 
